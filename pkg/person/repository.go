@@ -4,24 +4,51 @@ import (
 	"go-aether/pkg/entities"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
-type PersonRepository interface {
-	Create(ctx fiber.Ctx, person *entities.Person)
+var (
+	ctx fiber.Ctx
+)
+
+type Repository interface {
+	Create(person *entities.Person) (*entities.Person, error)
+	GetAll() (*[]entities.Person, error)
 }
 
-type personRepository struct {
-	dbPool *pgxpool.Pool
+type repository struct {
+	db *gorm.DB
+}
+
+func newRepository(db *gorm.DB) Repository {
+	return &repository{
+		db: db,
+	}
+}
+
+// GetAll implements [PersonRepository].
+func (repo *repository) GetAll() (*[]entities.Person, error) {
+
+	var person []entities.Person
+	page := 12
+	offset := (page - 1) * page
+	err := repo.db.Limit(page).Offset(offset).Find(&person).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &person, nil
 }
 
 // Create implements [PersonRepository].
-func (p *personRepository) Create(ctx fiber.Ctx, person *entities.Person) {
-	panic("unimplemented")
-}
+func (repo *repository) Create(person *entities.Person) (*entities.Person, error) {
 
-func newRepository(db *pgxpool.Pool) PersonRepository {
-	return &personRepository{
-		dbPool: db,
+	err := repo.db.WithContext(ctx).Create(&person).Error
+
+	if err != nil {
+		return nil, err
 	}
+	return person, nil
+
 }
