@@ -1,10 +1,8 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"go-aether/api/helper/migration"
 	"log"
-	"os"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,22 +25,24 @@ func main() {
 }
 
 func dbConc() {
+	config := migration.LoadConfig()
+	migration.InitDB(config)
 
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Gagal memuat .env:", err)
 	}
 
-	var err error
-	pool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatal("Unable to connect to database:", err)
-	}
+	// var err error
+	// pool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	// if err != nil {
+	// 	log.Fatal("Unable to connect to database:", err)
+	// }
 
-	// Verify the connection
-	if err := pool.Ping(context.Background()); err != nil {
-		log.Fatal("Unable to ping database:", err)
-	}
+	// // Verify the connection
+	// if err := pool.Ping(context.Background()); err != nil {
+	// 	log.Fatal("Unable to ping database:", err)
+	// }
 
-	fmt.Println("Connected to PostgreSQL database!")
+	// fmt.Println("Connected to PostgreSQL database!")
 
 }
